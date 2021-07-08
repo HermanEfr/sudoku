@@ -55,6 +55,13 @@ class Sudoku(tk.Frame):
             self.main_canvas.create_line(vert, fill='black', width=width)
             self.main_canvas.create_line(hor, fill='black', width=width)
 
+    def update_gui(self):
+        for row in range(9):
+            for col in range(9):
+                if self.cells[row][col]['mutable'] and self.matrix[row][col] != 0:
+                    num = self.matrix[row][col]
+                    self.main_canvas.itemconfigure(self.cells[row][col]['number'], text=str(num), fill='blue')
+
     def mark_square(self, event):
         x, y = event.x, event.y
         x = int(x // (REC_SIDE / 9))
@@ -71,7 +78,10 @@ class Sudoku(tk.Frame):
     def type_number(self, event):
         key = event.char
         numbers = ['1', '2', '3', '4', '5', '6', '7', '8', '9']
-        if self.active != (10, 10):
+        if key == 'b':
+            self.brute_force()
+            self.check_win()
+        elif self.active != (10, 10):
             x, y = self.active
             if key in numbers:
                 self.matrix = f.change_number(self.matrix, y, x, int(key))
@@ -89,6 +99,14 @@ class Sudoku(tk.Frame):
             name_frame = tk.Frame(self)
             name_frame.place(relx=0.5, y=45, anchor='center')
             tk.Label(name_frame, text='Congratulations!', font=NAME_FONT).grid()
+
+    def brute_force(self):
+        solution = False
+        brute = f.BruteForceSearch(self.matrix)
+        while not solution:
+            self.matrix, solution = brute.brute_force_search()
+            self.update_gui()
+            self.update_idletasks()
 
 
 if __name__ == "__main__":

@@ -1,7 +1,7 @@
-# Change numbers, check if win,
 import numpy as np
+from time import sleep
 
-
+# Creating the sudoku matrix
 def generate_board():
     board = np.array([[8, 1, 0, 0, 3, 0, 0, 2, 7],
                     [0, 6, 2, 0, 5, 0, 0, 9, 0],
@@ -15,6 +15,7 @@ def generate_board():
     return board
 
 
+# Functions for changing and checking board
 def change_number(board, row, col, new):
     board[row][col] = new
     return board
@@ -37,3 +38,63 @@ def check_win(board):
         return True
     else:
         return False
+
+
+# Solver using Brute-force search
+
+class BruteForceSearch:
+    def __init__(self, board):
+        self.board = board
+        self.shape = np.shape(self.board)
+        self.vector = np.reshape(self.board, -1)
+        self.template = self.vector == 0
+        self.solution = False
+        self.pointer = 0
+
+    def check_errors(self):
+        for i in self.board:
+            i = i[i != 0]
+            if len(np.unique(i)) != len(i):
+                return True
+        else:
+            for i in self.board.T:
+                i = i[i != 0]
+                if len(np.unique(i)) != len(i):
+                    return True
+            else:
+                for i in [0, 3, 6]:
+                    for j in [0, 3, 6]:
+                        cell = self.board[i:i+3, j:j+3]
+                        cell = cell[cell != 0]
+                        if len(np.unique(cell)) != len(cell):
+                            return True
+                else:
+                    return False
+
+    def move_back(self):
+        for i in reversed(range(self.pointer)):
+            if self.template[i]:
+                self.pointer = i
+                break
+
+    def brute_force_search(self):
+        while not self.solution:
+            if self.template[self.pointer]:
+                self.vector[self.pointer] += 1
+                self.board = np.reshape(self.vector, self.shape)
+                if self.vector[self.pointer] > 9:
+                    self.vector[self.pointer] = 0
+                    self.move_back()
+                elif self.check_errors():
+                    continue
+                else:
+                    if self.pointer == self.vector.size - 1:
+                        self.solution = True
+                    else:
+                        self.pointer += 1
+            else:
+                if self.pointer == self.vector.size - 1:
+                    self.solution = True
+                else:
+                    self.pointer += 1
+            return self.board, self.solution
