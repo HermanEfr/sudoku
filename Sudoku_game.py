@@ -5,6 +5,9 @@ REC_SIDE = 450
 PAD = 5
 NUMBER_FONT = ('Arial', 20, 'bold')
 NAME_FONT = ('Arial', 30, 'bold')
+COLORS = {'Focus': 'peach puff',
+          'Number': 'maroon',
+          'Robot': 'RoyalBlue2'}
 
 
 class Sudoku(tk.Frame):
@@ -58,9 +61,14 @@ class Sudoku(tk.Frame):
     def update_gui(self):
         for row in range(9):
             for col in range(9):
-                if self.cells[row][col]['mutable'] and self.matrix[row][col] != 0:
-                    num = self.matrix[row][col]
-                    self.main_canvas.itemconfigure(self.cells[row][col]['number'], text=str(num), fill='blue')
+                if self.cells[row][col]['mutable']:
+                    if self.matrix[row][col] != 0:
+                        num = self.matrix[row][col]
+                        self.main_canvas.itemconfigure(self.cells[row][col]['number'], text=str(num),
+                                                       fill=COLORS['Robot'])
+                    else:
+                        self.main_canvas.itemconfigure(self.cells[row][col]['number'], text='',
+                                                       fill=COLORS['Robot'])
 
     def mark_square(self, event):
         x, y = event.x, event.y
@@ -73,7 +81,7 @@ class Sudoku(tk.Frame):
                 old_x, old_y = self.active
             self.main_canvas.itemconfigure(self.cells[old_y][old_x]['rectangle'], fill='white')
             self.active = x, y
-            self.main_canvas.itemconfigure(self.cells[y][x]['rectangle'], fill='grey')
+            self.main_canvas.itemconfigure(self.cells[y][x]['rectangle'], fill=COLORS['Focus'])
 
     def type_number(self, event):
         key = event.char
@@ -85,7 +93,7 @@ class Sudoku(tk.Frame):
             x, y = self.active
             if key in numbers:
                 self.matrix = f.change_number(self.matrix, y, x, int(key))
-                self.main_canvas.itemconfigure(self.cells[y][x]['number'], text=str(key), fill='blue')
+                self.main_canvas.itemconfigure(self.cells[y][x]['number'], text=str(key), fill=COLORS['Number'])
                 self.check_win()
             elif key == 'r':
                 self.matrix = f.change_number(self.matrix, y, x, 0)
@@ -101,6 +109,7 @@ class Sudoku(tk.Frame):
             tk.Label(name_frame, text='Congratulations!', font=NAME_FONT).grid()
 
     def brute_force(self):
+        self.matrix = f.generate_board()
         solution = False
         brute = f.BruteForceSearch(self.matrix)
         while not solution:

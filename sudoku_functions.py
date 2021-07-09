@@ -1,17 +1,10 @@
 import numpy as np
-from time import sleep
+import stored_games as sg
+
 
 # Creating the sudoku matrix
 def generate_board():
-    board = np.array([[8, 1, 0, 0, 3, 0, 0, 2, 7],
-                    [0, 6, 2, 0, 5, 0, 0, 9, 0],
-                    [0, 7, 0, 0, 0, 0, 0, 0, 0],
-                    [0, 9, 0, 6, 0, 0, 1, 0, 0],
-                    [1, 0, 0, 0, 2, 0, 0, 0, 4],
-                    [0, 0, 8, 0, 0, 5, 0, 7, 0],
-                    [0, 0, 0, 0, 0, 0, 0, 8, 0],
-                    [0, 2, 0, 0, 1, 0, 7, 5, 0],
-                    [3, 8, 0, 0, 7, 0, 0, 4, 2]])
+    board = np.array(sg.HARD[1])
     return board
 
 
@@ -41,7 +34,6 @@ def check_win(board):
 
 
 # Solver using Brute-force search
-
 class BruteForceSearch:
     def __init__(self, board):
         self.board = board
@@ -52,24 +44,22 @@ class BruteForceSearch:
         self.pointer = 0
 
     def check_errors(self):
-        for i in self.board:
-            i = i[i != 0]
-            if len(np.unique(i)) != len(i):
-                return True
+        self.board = np.reshape(self.vector, self.shape)
+        num = self.vector[self.pointer]
+        row = self.pointer // 9
+        col = self.pointer % 9
+        num_row = self.board[row]
+        num_col = self.board.T[col]
+        if np.count_nonzero(num_row == num) != 1 or np.count_nonzero(num_col == num) != 1:
+            return True
         else:
-            for i in self.board.T:
-                i = i[i != 0]
-                if len(np.unique(i)) != len(i):
-                    return True
+            cell_row = (row // 3) * 3
+            cell_col = (col // 3) * 3
+            cell = self.board[cell_row:cell_row+3, cell_col:cell_col+3]
+            if np.count_nonzero(cell == num) != 1:
+                return True
             else:
-                for i in [0, 3, 6]:
-                    for j in [0, 3, 6]:
-                        cell = self.board[i:i+3, j:j+3]
-                        cell = cell[cell != 0]
-                        if len(np.unique(cell)) != len(cell):
-                            return True
-                else:
-                    return False
+                return False
 
     def move_back(self):
         for i in reversed(range(self.pointer)):
@@ -81,20 +71,22 @@ class BruteForceSearch:
         while not self.solution:
             if self.template[self.pointer]:
                 self.vector[self.pointer] += 1
-                self.board = np.reshape(self.vector, self.shape)
                 if self.vector[self.pointer] > 9:
                     self.vector[self.pointer] = 0
+                    self.board = np.reshape(self.vector, self.shape)
                     self.move_back()
+                    return self.board, self.solution
                 elif self.check_errors():
                     continue
                 else:
                     if self.pointer == self.vector.size - 1:
                         self.solution = True
+                        return self.board, self.solution
                     else:
                         self.pointer += 1
             else:
                 if self.pointer == self.vector.size - 1:
                     self.solution = True
+                    return self.board, self.solution
                 else:
                     self.pointer += 1
-            return self.board, self.solution
