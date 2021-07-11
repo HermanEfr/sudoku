@@ -26,17 +26,16 @@ def number(board, row, col):
 
 def check_win(board):
     template = np.arange(1, 10)
-    errors = 0
     for i in range(9):
         row, col = np.sort(board[i, :]), np.sort(board[:, i])
-        if not np.array_equal(row, template):
-            errors += 1
-        if not np.array_equal(col, template):
-            errors += 1
-    if errors == 0:
-        return True
+        cell = np.reshape(board[(i//3)*3:((i//3)*3)+3, (i % 3)*3:((i % 3)*3) + 3], -1)
+        cell = np.sort(cell)
+        if not np.array_equal(row, template) or not np.array_equal(col, template):
+            return False
+        elif not np.array_equal(cell, template):
+            return False
     else:
-        return False
+        return True
 
 
 # Solver using Brute-force search

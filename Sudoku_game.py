@@ -3,7 +3,7 @@ import sudoku_functions as f
 from time import time
 
 REC_SIDE = 450
-PAD = 5
+PAD = 10
 FONT = {'Number': ('Arial', 20, 'bold'),
         'Display': ('Arial', 20, 'bold'),
         'Time': ('Arial', 15, 'bold'),
@@ -16,7 +16,7 @@ COLORS = {'Active': 'peach puff',
           'Number': 'maroon',
           'Robot': 'RoyalBlue2'}
 # Små saker att lägga till:
-# 3. Knapp till algorithm
+# 1. Knapp till algorithm
 # Stora saker:
 # 1. Linear annealing algorithm
 # 2. OpenCV bildläsare för att skanna in sudokun
@@ -29,14 +29,14 @@ class Sudoku(tk.Frame):
         self.grid()
         self.master.title('Sudoku')
         self.master.resizable(False, False)
-        self.main_canvas = tk.Canvas(self, bg='white', width=REC_SIDE, height=REC_SIDE, bd=0)
-        self.main_canvas.grid(row=1, pady=(0, 10), padx=(10, 10))
+        self.main_canvas = tk.Canvas(self, width=REC_SIDE, height=REC_SIDE, bd=0)
+        self.main_canvas.grid(row=1, pady=(0, PAD), padx=(PAD, PAD))
         self.panel_frame = tk.Frame(self, width=REC_SIDE, height=35, bd=0)
-        self.panel_frame.grid(row=0, pady=(0, 0), padx=(10, 10), sticky='news')
+        self.panel_frame.grid(row=0, pady=(0, 0), padx=(PAD, PAD), sticky='news')
         self.time_frame = tk.Frame(self.panel_frame, bd=0)
         self.time_label = tk.Label(self.time_frame, text='', width=7, font=FONT['Time'])
         self.display_frame = tk.Frame(self.panel_frame, bd=0)
-        self.display_label = tk.Label(self.display_frame, text='Sudoku', font=FONT['Display'])
+        self.display_label = tk.Label(self.display_frame, text='', font=FONT['Display'])
 
         self.cells = []
         self.active = (10, 10)
@@ -47,7 +47,6 @@ class Sudoku(tk.Frame):
         self.after_id = None
         self.run_stopwatch()
         self.create_gui()
-        self.create_panel()
 
         self.master.bind('<Key>', self.type_number)
         self.main_canvas.bind('<Button-1>', self.mark_square)
@@ -55,6 +54,7 @@ class Sudoku(tk.Frame):
         self.mainloop()
 
     def create_gui(self):
+        self.create_panel()
         for row in range(9):
             cell_row = []
             for col in range(9):
@@ -96,6 +96,7 @@ class Sudoku(tk.Frame):
         self.time_frame.grid(column=2, row=0, sticky='e')
         self.time_label.pack()
         self.display_frame.grid(column=1, row=0)
+        self.display_label.configure(text='Sudoku')
         self.display_label.pack()
 
     def run_stopwatch(self):
@@ -149,7 +150,6 @@ class Sudoku(tk.Frame):
         numbers = ['1', '2', '3', '4', '5', '6', '7', '8', '9']
         if key == 'b':
             self.brute_force()
-            self.check_win()
         elif self.active != (10, 10):
             x, y = self.active
             if key in numbers:
@@ -169,12 +169,14 @@ class Sudoku(tk.Frame):
             self.stop_stopwatch()
 
     def brute_force(self):
+        self.stop_stopwatch()
         self.matrix = f.generate_board(self.difficulty.get())
         solution = False
         brute = f.BruteForceSearch(self.matrix)
         while not solution:
             self.matrix, solution = brute.brute_force_search()
             self.update_gui()
+        self.check_win()
 
 
 if __name__ == "__main__":
