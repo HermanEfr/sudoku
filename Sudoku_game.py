@@ -1,13 +1,26 @@
 import tkinter as tk
 import sudoku_functions as f
+from time import time
 
 REC_SIDE = 450
 PAD = 5
+FONT = {'Number': ('Arial', 20, 'bold'),
+        'Display': ('Arial', 20, 'bold'),
+        'Time': ('Arial', 15, 'bold'),
+        'Menu': ('Arial', 10, 'bold')}
+
 NUMBER_FONT = ('Arial', 20, 'bold')
-NAME_FONT = ('Arial', 30, 'bold')
-COLORS = {'Focus': 'peach puff',
+NAME_FONT = ('Arial', 20, 'bold')
+
+COLORS = {'Active': 'peach puff',
           'Number': 'maroon',
           'Robot': 'RoyalBlue2'}
+# Små saker att lägga till:
+# 3. Knapp till algorithm
+# Stora saker:
+# 1. Linear annealing algorithm
+# 2. OpenCV bildläsare för att skanna in sudokun
+# 3. Algorithm X https://en.wikipedia.org/wiki/Knuth%27s_Algorithm_X
 
 
 class Sudoku(tk.Frame):
@@ -17,12 +30,24 @@ class Sudoku(tk.Frame):
         self.master.title('Sudoku')
         self.master.resizable(False, False)
         self.main_canvas = tk.Canvas(self, bg='white', width=REC_SIDE, height=REC_SIDE, bd=0)
-        self.main_canvas.grid(pady=(80, 80), padx=(80, 80))
+        self.main_canvas.grid(row=1, pady=(0, 10), padx=(10, 10))
+        self.panel_frame = tk.Frame(self, width=REC_SIDE, height=35, bd=0)
+        self.panel_frame.grid(row=0, pady=(0, 0), padx=(10, 10), sticky='news')
+        self.time_frame = tk.Frame(self.panel_frame, bd=0)
+        self.time_label = tk.Label(self.time_frame, text='', width=7, font=FONT['Time'])
+        self.display_frame = tk.Frame(self.panel_frame, bd=0)
+        self.display_label = tk.Label(self.display_frame, text='Sudoku', font=FONT['Display'])
 
         self.cells = []
         self.active = (10, 10)
-        self.matrix = f.generate_board()
+        self.difficulty = tk.StringVar(self)
+        self.difficulty.set('Medium')
+        self.matrix = f.generate_board(self.difficulty.get())
+        self.start_time = time()
+        self.after_id = None
+        self.run_stopwatch()
         self.create_gui()
+        self.create_panel()
 
         self.master.bind('<Key>', self.type_number)
         self.main_canvas.bind('<Button-1>', self.mark_square)
@@ -44,10 +69,11 @@ class Sudoku(tk.Frame):
                     text = f.number(self.matrix, row, col)
                     mutable = False
                 rec = self.main_canvas.create_rectangle(rec_cord, fill='white', width=0)
-                num = self.main_canvas.create_text(x_cord, y_cord, text=text, fill='black', font=NUMBER_FONT)
+                num = self.main_canvas.create_text(x_cord, y_cord, text=text, fill='black', font=FONT['Number'])
                 cell_data = {'rectangle': rec, 'number': num, 'mutable': mutable}
                 cell_row.append(cell_data)
             self.cells.append(cell_row)
+        # Creating stripes
         for i in range(1, 9):
             vert = ((REC_SIDE / 9) * i, 0, (REC_SIDE / 9) * i, REC_SIDE)
             hor = (0, (REC_SIDE / 9) * i, REC_SIDE, (REC_SIDE / 9) * i)
@@ -57,6 +83,42 @@ class Sudoku(tk.Frame):
                 width = 1
             self.main_canvas.create_line(vert, fill='black', width=width)
             self.main_canvas.create_line(hor, fill='black', width=width)
+
+    def create_panel(self):
+        self.panel_frame.grid_columnconfigure((0, 2), weight=1)
+        self.panel_frame.grid_columnconfigure(1, weight=4)
+        # Creating difficulty menu
+        options_list = ['Easy', 'Medium', 'Hard', 'Expert']
+        dif_menu = tk.OptionMenu(self.panel_frame, self.difficulty, *options_list, command=self.set_difficulty)
+        dif_menu.config(width=7, relief='raised', bd=1, font=FONT['Menu'])
+        dif_menu.grid(column=0, row=0, sticky='w')
+        # Creating stopwatch and display labels
+        self.time_frame.grid(column=2, row=0, sticky='e')
+        self.time_label.pack()
+        self.display_frame.grid(column=1, row=0)
+        self.display_label.pack()
+
+    def run_stopwatch(self):
+        now = time()
+        elapsed = int(now - self.start_time)
+        second = elapsed % 60
+        minute = elapsed // 60
+        self.time_label.configure(text=f'{minute:02d}:{second:02d}')
+        self.after_id = self.master.after(500, self.run_stopwatch)
+
+    def stop_stopwatch(self):
+        if self.after_id:
+            self.master.after_cancel(self.after_id)
+            self.after_id = None
+
+    def set_difficulty(self, *args):
+        self.matrix = f.generate_board(self.difficulty.get())
+        self.cells = []
+        self.start_time = time()
+        self.stop_stopwatch()
+        self.run_stopwatch()
+        self.create_gui()
+        self.update_idletasks()
 
     def update_gui(self):
         for row in range(9):
@@ -69,11 +131,10 @@ class Sudoku(tk.Frame):
                     else:
                         self.main_canvas.itemconfigure(self.cells[row][col]['number'], text='',
                                                        fill=COLORS['Robot'])
+        self.update_idletasks()
 
     def mark_square(self, event):
-        x, y = event.x, event.y
-        x = int(x // (REC_SIDE / 9))
-        y = int(y // (REC_SIDE / 9))
+        x, y = int(event.x // (REC_SIDE / 9)), int(event.y // (REC_SIDE / 9))
         if self.cells[y][x]['mutable']:
             if self.active == (10, 10):
                 old_x, old_y = x, y
@@ -81,7 +142,7 @@ class Sudoku(tk.Frame):
                 old_x, old_y = self.active
             self.main_canvas.itemconfigure(self.cells[old_y][old_x]['rectangle'], fill='white')
             self.active = x, y
-            self.main_canvas.itemconfigure(self.cells[y][x]['rectangle'], fill=COLORS['Focus'])
+            self.main_canvas.itemconfigure(self.cells[y][x]['rectangle'], fill=COLORS['Active'])
 
     def type_number(self, event):
         key = event.char
@@ -104,18 +165,16 @@ class Sudoku(tk.Frame):
 
     def check_win(self):
         if f.check_win(self.matrix):
-            name_frame = tk.Frame(self)
-            name_frame.place(relx=0.5, y=45, anchor='center')
-            tk.Label(name_frame, text='Congratulations!', font=NAME_FONT).grid()
+            self.display_label.configure(text='Congratulations!')
+            self.stop_stopwatch()
 
     def brute_force(self):
-        self.matrix = f.generate_board()
+        self.matrix = f.generate_board(self.difficulty.get())
         solution = False
         brute = f.BruteForceSearch(self.matrix)
         while not solution:
             self.matrix, solution = brute.brute_force_search()
             self.update_gui()
-            self.update_idletasks()
 
 
 if __name__ == "__main__":

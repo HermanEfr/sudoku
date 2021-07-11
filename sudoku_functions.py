@@ -3,9 +3,15 @@ import stored_games as sg
 
 
 # Creating the sudoku matrix
-def generate_board():
-    board = np.array(sg.HARD[1])
-    return board
+def generate_board(difficulty):
+    if difficulty == 'Easy':
+        return np.array(sg.Easy[1])
+    elif difficulty == 'Medium':
+        return np.array(sg.Medium[1])
+    elif difficulty == 'Hard':
+        return np.array(sg.Hard[1])
+    elif difficulty == 'Expert':
+        return np.array(sg.Expert[1])
 
 
 # Functions for changing and checking board
@@ -75,7 +81,6 @@ class BruteForceSearch:
                     self.vector[self.pointer] = 0
                     self.board = np.reshape(self.vector, self.shape)
                     self.move_back()
-                    return self.board, self.solution
                 elif self.check_errors():
                     continue
                 else:
