@@ -85,12 +85,12 @@ class BruteForceSearch:
                 else:
                     if self.pointer == self.vector.size - 1:
                         self.solution = True
-                        return self.board, self.solution
+                        return self.board
                     else:
                         self.pointer += 1
             else:
                 if self.pointer == self.vector.size - 1:
                     self.solution = True
-                    return self.board, self.solution
+                    return self.board
                 else:
                     self.pointer += 1
