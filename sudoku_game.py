@@ -4,23 +4,17 @@ from time import time
 
 REC_SIDE = 450
 PAD = 10
-FONT = {'Number': ('Arial', 20, 'bold'),
-        'Display': ('Arial', 20, 'bold'),
-        'Time': ('Arial', 15, 'bold'),
-        'Menu': ('Arial', 10, 'bold')}
+FONT = {'Number': ('Arial', 25),
+        'Display': ('Arial', 20),
+        'Time': ('Arial', 15),
+        'Menu': ('Arial', 10)}
 
 NUMBER_FONT = ('Arial', 20, 'bold')
 NAME_FONT = ('Arial', 20, 'bold')
 
-COLOUR = {'Active': 'peach puff',
-          'Number': 'maroon',
-          'Robot': 'RoyalBlue2'}
-# Små saker att lägga till:
-# 1. Knapp till algorithm
-# Stora saker:
-# 1. Linear annealing algorithm
-# 2. OpenCV bildläsare för att skanna in sudokun
-# 3. Algorithm X https://en.wikipedia.org/wiki/Knuth%27s_Algorithm_X
+COLOUR = {'Active': 'lavender',
+          'Number': 'RoyalBlue3',
+          'Robot': 'RoyalBlue3'}
 
 
 class Sudoku(tk.Frame):
@@ -29,7 +23,7 @@ class Sudoku(tk.Frame):
         self.grid()
         self.master.title('Sudoku')
         self.master.resizable(False, False)
-        self.main_canvas = tk.Canvas(self, width=REC_SIDE, height=REC_SIDE, bd=0)
+        self.main_canvas = tk.Canvas(self, width=REC_SIDE, height=REC_SIDE, borderwidth=0, highlightthickness=0)
         self.main_canvas.grid(row=1, pady=(0, PAD), padx=(PAD, PAD))
         self.panel_frame = tk.Frame(self, width=REC_SIDE, height=35, bd=0)
         self.panel_frame.grid(row=0, pady=(0, 0), padx=(PAD, PAD), sticky='news')
@@ -74,10 +68,12 @@ class Sudoku(tk.Frame):
                 cell_row.append(cell_data)
             self.cells.append(cell_row)
         # Creating stripes
-        for i in range(1, 9):
+        for i in range(0, 10):
             vert = ((REC_SIDE / 9) * i, 0, (REC_SIDE / 9) * i, REC_SIDE)
             hor = (0, (REC_SIDE / 9) * i, REC_SIDE, (REC_SIDE / 9) * i)
-            if i % 3 == 0:
+            if i % 9 == 0:
+                width = 4
+            elif i % 3 == 0:
                 width = 2
             else:
                 width = 1
