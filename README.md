@@ -8,4 +8,4 @@ To run the Sudoku you will need numpy and the python standard library.
   Assign values with 1-9 on keyboard\
   Press 'r' to erase number in focus\
   Press 'c' to erase focus\
-  Press 'b' to activate solver
+  Press 'b' to run solver
