@@ -1,5 +1,6 @@
 # sudoku
 Sudoku made in python with tkinter as GUI\
+To run the Sudoku you will need numpy and the python standard library\
 The program also includes a solver using a brute-force search algorithm\
 Controls:\
   Mouse to assign focus\
