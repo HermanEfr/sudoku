@@ -86,7 +86,7 @@ class Sudoku(tk.Frame):
         # Creating difficulty menu
         options_list = ['Easy', 'Medium', 'Hard', 'Expert']
         dif_menu = tk.OptionMenu(self.panel_frame, self.difficulty, *options_list, command=self.set_difficulty)
-        dif_menu.config(width=7, relief='raised', bd=1, font=FONT['Menu'])
+        dif_menu.config(width=7, relief='raised', bd=2, font=FONT['Menu'])
         dif_menu.grid(column=0, row=0, sticky='w')
         # Creating stopwatch and display labels
         self.time_frame.grid(column=2, row=0, sticky='e')
@@ -166,6 +166,8 @@ class Sudoku(tk.Frame):
 
     def brute_force(self):
         self.stop_stopwatch()
+        self.display_label.configure(text='Solving...')
+        self.update_idletasks()
         self.matrix = f.generate_board(self.difficulty.get())
         brute = f.BruteForceSearch(self.matrix)
         self.matrix = brute.brute_force_search()
